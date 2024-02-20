@@ -1,49 +1,116 @@
-import { Router } from "express";
-import productModel from "../dao/model/product.model.js";
+import { Router } from "express"
+import { productModel } from "../dao/model/product.model.js"
 
-const router = Router();
+const productsRouter = Router()
 
-//todo mediante postman
-
-router.get("/", async(req,res)=>{
+//Render on front with handlebars with IO
+productsRouter.get('/', async (req, res) => {
     try {
-        let users = await productModel.find()
-        res.send({ result: "success", payload: users })
+        const allProducts = await productModel.find({}, { _id: 0, __v: 0 }).lean() //We ensure flat javascript objects and not complex mongoose prototypes
+        res.render('home', {
+            style: '/css/styles.css',
+            title: "All Products",
+            allProducts
+        })
     } catch (error) {
-        
+        res.status(400).send('Internal server Error', error)
     }
 })
 
-//emvia informacion
-router.post("/", async(req,res)=>{
-    let {nombre, descripcion, precio} = req.body
+//Render products in real time with ws
+productsRouter.get('/realtimeproducts', async (req, res) => {
+    res.render('realTimeProducts', {
+        style: '/css/styles.css'
+    })
+})
 
-    if(!nombre || !descripcion || !precio) {
-        res.send({status: "error", error:"Faltan datos"})
+//All or with limit
+productsRouter.get('/api/products', async (req, res) => {
+    const { limit } = req.query
+    try {
+        const products = await productModel.find().limit(limit)
+        res.status(200).send({ result: 'Success', message: products })
+    } catch (error) {
+        req.status(400).send({
+            response: 'Error read db', message: error
+        })
     }
-
-    let result = await productModel.create({nombre, descripcion, precio})
-    res.send({result: "success", payload: result})
 })
 
-//recibe id y modifica
-router.put("/:uid", async(req,res)=>{
-    let { uid } = req.params;
-    let productToReplace = req.body;
-
-    if(!productToReplace.nombre || !productToReplace.descripcion || !productToReplace.precio) {
-        res.send({ status: "error", error:"Faltan datos" })
+//See With ID
+productsRouter.get('/api/products/:id', async (req, res) => {
+    const { id } = req.params
+    try {
+        const product = await productModel.findById(id)
+        if (!product) {
+            return res.status(404).send('Product not found')
+        }
+        res.status(200).send({ result: 'Success', message: product })
+    } catch (error) {
+        res.status(404).send({ result: 'Error', message: 'Not found' })
     }
-
-    let result = await productModel.updateOne({ _id: uid }, productToReplace);
-    res.send({ result: "success", payload: result })
 })
 
-//recibe id Y elimina
-router.delete ("/:uid", async(req,res)=>{
-    let { uid } = req.params;
-    let result = await productModel.deleteOne({_id: uid})
-    res.send({result: "success", payload: result})
+//Add new product
+productsRouter.post('/api/products', async (req, res) => {
+    const { title, description, price, thumbnail, code, stock, category } = req.body
+
+    try {
+        let prod = await productModel.create({
+            title,
+            description,
+            price,
+            thumbnail,
+            code,
+            stock,
+            category
+        })
+        res.status(200).send({ result: "Success", message: prod })
+    } catch (error) {
+        res.status(400).send({
+            result: 'Error create product', message: error.message
+        })
+    }
 })
 
-export default router;
+//Update product
+productsRouter.put('/api/products/:id', async (req, res) => {
+    const { id } = req.params
+    const { title, description, price, thumbnail, code, stock, status, category } = req.body
+
+    try {
+        const product = await productModel.findByIdAndUpdate(id, {
+            title,
+            description,
+            price,
+            thumbnail,
+            code,
+            stock,
+            status,
+            category
+        })
+
+        if (!product) {
+            return res.status(404).send({ result: 'Error', message: 'Product not found' })
+        }
+        res.status(200).send({ result: 'OK', message: 'Product updated' })
+    } catch (error) {
+        res.status(400).send({ result: 'Error updating product', message: error })
+    }
+})
+
+//Delete Product
+productsRouter.delete('/api/products/:id', async (req, res) => {
+    const { id } = req.params
+    try {
+        const product = await productModel.findByIdAndDelete(id)
+        if (!product) {
+            return res.status(404).send({ result: 'Error', message: 'Product not found' })
+        }
+        res.status(200).send({ result: 'Success', message: 'Product deleted', product })
+    } catch (error) {
+        res.status(400).send({ result: 'Error deleting product', message: error })
+    }
+})
+
+export default productsRouter

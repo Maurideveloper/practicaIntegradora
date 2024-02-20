@@ -1,49 +1,56 @@
-import { Router } from "express";
-import cartModel from "../dao/model/carts.model.js";
+import { Router } from 'express'
+import { cartModel } from '../dao/model/carts.model.js'
+import { productModel } from '../dao/model/product.model.js'
 
-const router = Router();
+const cartsRouter = Router()
 
-//todo mediante postman
-
-router.get("/", async(req,res)=>{
+cartsRouter.post('/api/carts', async (req, res) => {
     try {
-        let users = await cartModel.find()
-        res.send({ result: "success", payload: users })
+        const cart = await cartModel.create({ products: [] })
+        res.status(200).send({ result: 'Success', message: cart })
     } catch (error) {
-        
+        res.status(400).send({ result: 'Error', message: error })
     }
 })
 
-//emvia informacion
-router.post("/", async(req,res)=>{
-    let {tipo_chocolate, descripcion} = req.body
-
-    if(!tipo_chocolate || !descripcion) {
-        res.send({status: "error", error:"Faltan datos"})
+cartsRouter.get('/api/carts/:cid', async (req, res) => {
+    const { cid } = req.params
+    try {
+        const cart = await cartModel.findById(cid)
+        if (!cart) {
+            return res.status(404).send({ result: 'Error', message: 'Cart not found' })
+        }
+        res.status(200).send({ result: 'Success', message: cart })
+    } catch (error) {
+        res.status(400).send({ result: 'Error consulting cart', error })
     }
-
-    let result = await cartModel.create({tipo_chocolate, descripcion})
-    res.send({result: "success", payload: result})
 })
 
-//recibe id y modifica
-router.put("/:uid", async(req,res)=>{
-    let { uid } = req.params;
-    let productToReplace = req.body;
+cartsRouter.post('/api/carts/:cid/product/:pid', async (req, res) => {
+    const { cid, pid } = req.params
+    const { quantity } = req.body
+    try {
+        const cart = await cartModel.findById(cid)
+        if (!cart) {
+            return res.status(404).json({ result: 'Error', message: 'Cart not found' })
+        }
 
-    if(!productToReplace.tipo_chocolate || !productToReplace.descripcion) {
-        res.send({ status: "error", error:"Faltan datos" })
+        const product = await productModel.findById(pid)
+        if (!product) {
+            return res.status(404).json({ result: 'Error', message: 'Product not found' })
+        }
+
+        const existingProductIndex = cart.products.findIndex(prod => prod.product.toString() === pid)
+        if (existingProductIndex !== -1) {
+            cart.products[existingProductIndex].quantity += quantity
+        } else {
+            cart.products.push({ product: pid, quantity })
+        }
+        await cart.save()
+        res.status(200).json({ result: 'Success', message: 'Product added to cart' })
+    } catch (error) {
+        res.status(400).json({ result: 'Error', message: error.message })
     }
-
-    let result = await cartModel.updateOne({ _id: uid }, productToReplace);
-    res.send({ result: "success", payload: result })
 })
 
-//recibe id Y elimina
-router.delete ("/:uid", async(req,res)=>{
-    let { uid } = req.params;
-    let result = await cartModel.deleteOne({_id: uid})
-    res.send({result: "success", payload: result})
-})
-
-export default router;
+export default cartsRouter

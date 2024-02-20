@@ -1,16 +1,42 @@
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 
-//implemento una coleccion nueva
-const productsCollection = "products";
+const productsCollection = 'products'
 
-//instancia
 const productsSchema = new mongoose.Schema({
-    nombre: {type: String, requiered:true, max:100},
-    descripcion: {type: String, requiered:true, max:100},
-    precio: {type: Number, requiered:true, max:100000}
-});
 
-const productModel = mongoose.model(productsCollection, productsSchema);
+    title: {
+        type: String,
+        required: true
+        //max:100
+    },
+    description: {
+        type: String,
+        required: true
+        //max:200
+    },
+    price: {
+        type: Number,
+        required: true
+    },
+    thumbnail: [],
+    status: {
+        type: Boolean,
+        default: true
+    },
+    code: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    stock: {
+        type: Number,
+        required: true
 
-export default productModel;
+    },
+    category: {
+        type: String,
+        required: true
+    }
+})
 
+export const productModel = mongoose.model(productsCollection, productsSchema)
