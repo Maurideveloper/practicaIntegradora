@@ -17,6 +17,10 @@ body {
     padding: 10px 10px 10px 10px;
 }
 
+.product_list{
+    display: flex;
+}
+
 .product_box_realTime {
     display: flex;
     justify-content: center;
