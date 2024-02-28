@@ -9,12 +9,12 @@
 
 <body>
     <nav class="nav_cart">
-        <h1 class="title_products">Lista de productos</h1>
+        <h1 class="title_products">List of products</h1>
 
-        <button id="newCartButton">Crear nuevo carrito</button>
+        <button id="newCartButton">Make cart</button>
 
         <div class="containter_cart">
-            <p class="title_select">Seleccione un carrito</p>
+            <p class="title_select">Select cart</p>
             <select name="cartSelect" id="cartSelect">
                 {{#each carts}}
                 <option value="{{this._id}}" {{#ifCond this._id '===' selectedCartId}}selected{{/ifCond}}>{{this._id}}
@@ -40,8 +40,8 @@
             <ul class="product_box">
                 <li class="list_box">
                     <h2>Product: {{title}} </h2>
-                    <p>Desc: {{description}}</p>
-                    <p>price: {{price}}</p>
+                    <p>Description: {{description}}</p>
+                    <p>Price: ${{price}}</p>
                     <p>Code: {{code}}</p>
                     <p>Stock: {{stock}}</p>
                     <p>category: {{category}}</p>
@@ -69,7 +69,7 @@
         {{/if}}
 
     </div>
-    <div class="total_pages">Total pages: {{totalPages}}</div>
+    <div class="total_pages">Total de paginas: {{totalPages}}</div>
 
     <script src="/js/addProduct.js"></script>
 </body>

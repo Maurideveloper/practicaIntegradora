@@ -12,7 +12,11 @@ body {
 
 .container_product {
     display: grid;
+    width: 100%;
     grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    justify-content: center;
+    justify-items: center
 }
 
 .product_box {
@@ -135,13 +139,13 @@ a:hover {
 .btn_prev {
     padding: 15px;
     border-radius: 10%;
-    color: rgb(8, 80, 132);
+    color: black;
 }
 
 .btn_next {
     padding: 15px;
     border-radius: 10%;
-    color: rgb(8, 80, 132);
+    color: black;
 }
 
 .btn_cart {

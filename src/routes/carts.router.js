@@ -4,7 +4,6 @@ import { productModel } from '../dao/model/product.model.js'
 
 const cartsRouter = Router()
 
-//Create new cart
 cartsRouter.post('/api/carts', async (req, res) => {
     try {
         const cart = await cartModel.create({ products: [] })
@@ -14,7 +13,6 @@ cartsRouter.post('/api/carts', async (req, res) => {
     }
 })
 
-//Show all carts
 cartsRouter.get('/api/carts', async (req, res) => {
     try {
         const carts = await cartModel.find().lean()
@@ -37,7 +35,7 @@ cartsRouter.get('/api/carts/:cid', async (req, res) => {
     }
 })
 
-//Carts view
+//Vista del Cart
 cartsRouter.get('/carts/:cid', async (req, res) => {
     const { cid } = req.params
 
@@ -57,7 +55,7 @@ cartsRouter.get('/carts/:cid', async (req, res) => {
     }
 })
 
-//Add product in especific cart
+//Agregar producto a cart mediante id
 cartsRouter.post('/api/carts/:cid/products/:pid', async (req, res) => {
     const { cid, pid } = req.params
     const { quantity } = req.body
@@ -85,78 +83,7 @@ cartsRouter.post('/api/carts/:cid/products/:pid', async (req, res) => {
     }
 })
 
-//Delete one product from cart
-cartsRouter.delete('/api/carts/:cid/products/:pid', async (req, res) => {
-    const { cid, pid } = req.params
-
-    try {
-
-        const cart = await cartModel.findById(cid)
-        if (!cart) {
-            return res.status(404).json({ result: 'Error', message: 'Cart not found' })
-        }
-
-        const product = await productModel.findById(pid)
-        if (!product) {
-            return res.status(404).json({ result: 'Error', message: 'Product not found' })
-        }
-
-        const existingProductIndex = cart.products.findIndex(prod => prod.product.toString() === pid)
-
-        if (existingProductIndex !== -1) {
-            cart.products.splice(existingProductIndex, 1)
-        } else {
-            res.status(404).send({ result: 'Error', message: 'Product not found in cart' })
-        }
-        await cart.save()
-        res.status(200).json({ result: 'Success', message: 'Product deleted from cart' })
-
-    } catch (error) {
-        res.status(400).json({ result: 'Error', message: error.message })
-    }
-})
-
-//Update the cart with an array of products
-cartsRouter.put('/api/carts/:cid', async (req, res) => {
-    const { cid } = req.params
-    const products = req.body.products
-
-    try {
-        const cart = await cartModel.findById(cid)
-        if (!cart) return res.status(404).json({ response: 'Error', message: 'Cart not found' })
-        if (!Array.isArray(products)) return res.status(400).json({ response: 'Error', message: 'Product must be an array' })
-
-        for (const item of products) {
-            const productId = item.product
-            const quantity = item.quantity
-
-            // Search the product in the database
-            const product = await productModel.findById(productId)
-            if (!product) {
-                return res.status(404).json({ response: 'Error', message: `Product with id ${productId} not found` })
-            }
-
-            // Update cart with product and quantity
-            const existingProductIndex = cart.products.findIndex(prod => prod.product.toString() === productId)
-
-            if (existingProductIndex !== -1) {
-                // If the product already exists in the cart, update the quantity
-                cart.products[existingProductIndex].quantity = quantity
-            } else {
-                // If the product does not exist in the cart, add it
-                cart.products.push({ product: productId, quantity: quantity })
-            }
-        }
-
-        await cart.save()
-
-        return res.status(200).json({ response: 'Success', message: 'Cart updated successfully' })
-    } catch (error) {
-        return res.status(500).json({ response: 'Error', message: 'Internal server error', error })
-    }
-})
-
-//Update quantity product from cart
+//Actualiza cantidad desde cart
 cartsRouter.put('/api/carts/:cid/products/:pid', async (req, res) => {
     const { cid, pid } = req.params
     const { quantity } = req.body
@@ -181,6 +108,78 @@ cartsRouter.put('/api/carts/:cid/products/:pid', async (req, res) => {
         }
         await cart.save()
         res.status(200).json({ message: "Updated quantity" })
+
+    } catch (error) {
+        res.status(400).json({ result: 'Error', message: error.message })
+    }
+})
+
+
+
+cartsRouter.put('/api/carts/:cid', async (req, res) => {
+    const { cid } = req.params
+    const products = req.body.products
+
+    try {
+        const cart = await cartModel.findById(cid)
+        if (!cart) return res.status(404).json({ response: 'Error', message: 'Cart not found' })
+        if (!Array.isArray(products)) return res.status(400).json({ response: 'Error', message: 'Product must be an array' })
+
+        for (const item of products) {
+            const productId = item.product
+            const quantity = item.quantity
+
+            // Busqueda en DB del producto
+            const product = await productModel.findById(productId)
+            if (!product) {
+                return res.status(404).json({ response: 'Error', message: `Product with id ${productId} not found` })
+            }
+
+            // Actuliza el cart con cantidad y producto
+            const existingProductIndex = cart.products.findIndex(prod => prod.product.toString() === productId)
+
+            if (existingProductIndex !== -1) {
+                // Cuando el producto ya existe en el cart le agrega solamente la cantidad
+                cart.products[existingProductIndex].quantity = quantity
+            } else {
+                // Si el producto no existe en el cart lo agrega
+                cart.products.push({ product: productId, quantity: quantity })
+            }
+        }
+
+        await cart.save()
+
+        return res.status(200).json({ response: 'Success', message: 'Cart updated successfully' })
+    } catch (error) {
+        return res.status(500).json({ response: 'Error', message: 'Internal server error', error })
+    }
+})
+
+//Borrar producto desde cart
+cartsRouter.delete('/api/carts/:cid/products/:pid', async (req, res) => {
+    const { cid, pid } = req.params
+
+    try {
+
+        const cart = await cartModel.findById(cid)
+        if (!cart) {
+            return res.status(404).json({ result: 'Error', message: 'Cart not found' })
+        }
+
+        const product = await productModel.findById(pid)
+        if (!product) {
+            return res.status(404).json({ result: 'Error', message: 'Product not found' })
+        }
+
+        const existingProductIndex = cart.products.findIndex(prod => prod.product.toString() === pid)
+
+        if (existingProductIndex !== -1) {
+            cart.products.splice(existingProductIndex, 1)
+        } else {
+            res.status(404).send({ result: 'Error', message: 'Product not found in cart' })
+        }
+        await cart.save()
+        res.status(200).json({ result: 'Success', message: 'Product deleted from cart' })
 
     } catch (error) {
         res.status(400).json({ result: 'Error', message: error.message })

@@ -8,7 +8,7 @@
 </head>
 
 <body>
-    <h1 class="title_cart">Shopping Cart</h1>
+    <h1 class="title_cart">Carrito de compras</h1>
     <div class="cart-container_cart">
         <ul class="box_product_cart">
             {{#each cart.products}}
@@ -18,10 +18,10 @@
                     <p>{{this.product.description}}</p>
                 </div>
                 <div>
-                    <p>Quantity: {{this.quantity}}</p>
+                    <p>Cantidad: {{this.quantity}}</p>
                 </div>
                 <div>
-                    <p>Price: {{this.product.price}}</p>
+                    <p>Precio: ${{this.product.price}}</p>
                 </div>
             </li>
             {{/each }}

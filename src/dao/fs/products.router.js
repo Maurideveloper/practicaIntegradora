@@ -164,7 +164,7 @@ productsRouter.post("/api/products", async (req, res) => {
     }
 })
 
-//Update product
+//Actualizar producto
 productsRouter.put("/api/products/:id", async (req, res) => {
     const { id } = req.params
     const {
@@ -201,7 +201,7 @@ productsRouter.put("/api/products/:id", async (req, res) => {
     }
 })
 
-//Delete Product
+//Borrado de producto
 productsRouter.delete("/api/products/:id", async (req, res) => {
     const { id } = req.params
     try {
