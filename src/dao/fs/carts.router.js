@@ -1,4 +1,4 @@
-import { Router, response } from 'express'
+/*import { Router, response } from 'express'
 import { cartModel } from '../model/cart.model.js'
 import { productModel } from '../model/product.model.js'
 
@@ -201,4 +201,4 @@ cartsRouter.delete('/api/carts/:cid', async (req, res) => {
     }
 })
 
-export default cartsRouter
+export default cartsRouter*/

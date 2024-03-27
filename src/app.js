@@ -1,7 +1,12 @@
 import express from 'express'
+import session from 'express-session'
+import MongoStore from 'connect-mongo'
+import cookieParser from 'cookie-parser'
 import __dirname from './utils.js'
 import handlebars from 'express-handlebars'
 import { Server } from 'socket.io'
+import usersRouter from './routes/users.router.js'
+import sessionsRouter from './routes/sessions.router.js'
 import productsRouter from './routes/products.router.js'
 import cartsRouter from './routes/carts.router.js'
 import { productModel } from './dao/model/product.model.js'
@@ -12,6 +17,29 @@ const app = express()
 const httpServer = app.listen(port, () =>
 	console.log(`'Server online - PORT ${port}`),
 )
+
+//Connection DB
+mongoose
+	.connect("mongodb+srv://maurid2000:ar42612240@cluster0.osvn38s.mongodb.net/?retryWrites=true&w=majority")
+
+	.then(() => {
+		console.log('Connected to the database')
+	})
+	.catch(() => {
+		console.log('Error connecting to database')
+	})
+
+//Middleware session
+app.use(cookieParser("sÑcret925501135"))
+app.use(session({
+	store: MongoStore.create({
+		mongoUrl: 'mongodb+srv://maurid2000:ar42612240@cluster0.osvn38s.mongodb.net/ecommerce?retryWrites=true&w=majority',
+		ttl: 600 //unit in seconds
+	}),
+	secret: "sÑcret314159",
+	resave: false,
+	saveUninitialized: false
+}))
 
 //Socket server
 const io = new Server(httpServer)
@@ -27,18 +55,10 @@ app.set('view engine', 'handlebars')
 app.use(express.static(__dirname + '/public'))
 
 //Routes
+app.use('/', sessionsRouter)
 app.use('/', productsRouter)
 app.use('/', cartsRouter)
-
-//Connection DB
-mongoose
-    .connect("mongodb+srv://maurid2000:ar42612240@cluster0.osvn38s.mongodb.net/?retryWrites=true&w=majority")
-	.then(() => {
-		console.log('Connected to the database')
-	})
-	.catch(() => {
-		console.log('Error connecting to database')
-	})
+app.use('/', usersRouter)
 
 //Connection WS
 io.on('connection', (socket) => {
@@ -96,3 +116,4 @@ io.on('connection', (socket) => {
 		}
 	})
 })
+

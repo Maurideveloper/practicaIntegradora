@@ -1,4 +1,4 @@
-import { Router } from "express"
+/*import { Router } from "express"
 import { productModel } from "../model/product.model.js"
 
 const productsRouter = Router()
@@ -219,4 +219,4 @@ productsRouter.delete("/api/products/:id", async (req, res) => {
     }
 })
 
-export default productsRouter
+export default productsRouter*/
